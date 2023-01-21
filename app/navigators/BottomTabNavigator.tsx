@@ -12,6 +12,7 @@ import { routes } from './routes';
 const Tab = createBottomTabNavigator();
 const options = (route: RouteProp<ParamListBase, string>) => {
   return {
+    headerShown: false,
     tabBarIcon: ({ focused, color, size }) => {
       let icon: React.ReactNode;
 

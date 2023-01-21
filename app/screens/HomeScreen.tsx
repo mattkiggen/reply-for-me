@@ -1,77 +1,64 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { Button, TextInput, Text } from 'react-native-paper';
+import { supabase } from '../lib/supabase';
 
 export default function HomeScreen() {
   const [message, setMessage] = useState('');
   const [instruction, setInstruction] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [responseText, setResponseText] = useState('');
+
+  const handlePress = async () => {
+    const { data } = await supabase.functions.invoke('generate-reply', {
+      body: {
+        prompt: `Generate a reply for the following message using this instruction "${instruction}":\n${message}`,
+      },
+    });
+    if (data) setResponseText(data.choices[0].text);
+  };
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.label}>Message or email:</Text>
       <TextInput
-        style={styles.messageInput}
+        style={{ marginBottom: 16 }}
         multiline
         numberOfLines={10}
+        mode='outlined'
+        label='Message or email'
+        value={message}
         onChangeText={setMessage}
+        outlineColor='#ddd'
       />
 
-      <Text style={styles.label}>Instruction:</Text>
-      <TextInput style={styles.promptInput} onChangeText={setInstruction} />
+      <TextInput
+        style={{ marginBottom: 24 }}
+        mode='outlined'
+        label='Instruction'
+        value={instruction}
+        onChangeText={setInstruction}
+        outlineColor='#ddd'
+      />
 
-      <Pressable
-        onPress={() => console.log({ message, instruction })}
-        style={({ pressed }) => [
-          { backgroundColor: pressed ? '#4f67ff8f' : '#4f67ff' },
-          styles.button,
-        ]}>
-        <Text style={styles.buttonText}>Generate</Text>
-      </Pressable>
+      <Button
+        mode='contained'
+        onPress={handlePress}
+        loading={loading}
+        icon='auto-fix'>
+        Generate
+      </Button>
+
+      {responseText && <Text>{responseText}</Text>}
       <StatusBar style='auto' />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    height: 42,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 14,
-  },
-  label: {
-    marginBottom: 8,
-  },
-  messageInput: {
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
-    borderRadius: 8,
-    fontSize: 14,
-    padding: 8,
-    textAlignVertical: 'top',
-    marginBottom: 16,
-  },
-  promptInput: {
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
-    borderRadius: 8,
-    fontSize: 14,
-    padding: 8,
-    marginBottom: 24,
-  },
   screen: {
     flex: 1,
     padding: 16,
+    paddingTop: 32,
   },
 });
