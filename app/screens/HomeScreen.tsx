@@ -11,12 +11,16 @@ export default function HomeScreen() {
   const [responseText, setResponseText] = useState('');
 
   const handlePress = async () => {
-    const { data } = await supabase.functions.invoke('generate-reply', {
+    setLoading(true);
+    const { data, error } = await supabase.functions.invoke('generate-reply', {
       body: {
-        prompt: `Generate a reply for the following message using this instruction "${instruction}":\n${message}`,
+        prompt: `Generate a reply for the following message using the following intent "${instruction}":\n${message}`,
       },
     });
-    if (data) setResponseText(data.choices[0].text);
+    setLoading(false);
+
+    if (error) return console.log(error);
+    console.log(data.choices[0].text);
   };
 
   return (
@@ -49,7 +53,6 @@ export default function HomeScreen() {
         Generate
       </Button>
 
-      {responseText && <Text>{responseText}</Text>}
       <StatusBar style='auto' />
     </View>
   );
